@@ -57,6 +57,7 @@ std::unordered_map<std::string, DataPackage::_rtde_type_variant> DataPackage::g_
   { "robot_mode", int32_t() },
   { "joint_mode", vector6int32_t() },
   { "safety_mode", int32_t() },
+  { "safety_status", int32_t() },
   { "actual_tool_accelerometer", vector3d_t() },
   { "speed_scaling", double() },
   { "target_speed_fraction", double() },
@@ -88,7 +89,7 @@ std::unordered_map<std::string, DataPackage::_rtde_type_variant> DataPackage::g_
   { "tool_output_voltage", int32_t() },
   { "tool_output_current", double() },
   { "tool_temperature", double() },
-  { "tool_force_scalar", double() },
+  { "tcp_force_scalar", double() },
   { "output_bit_registers0_to_31", uint32_t() },
   { "output_bit_registers32_to_63", uint32_t() },
   { "output_bit_register_0", bool() },
@@ -553,6 +554,14 @@ std::unordered_map<std::string, DataPackage::_rtde_type_variant> DataPackage::g_
   { "standard_analog_output_type", uint8_t() },
   { "standard_analog_output_0", double() },
   { "standard_analog_output_1", double() },
+  { "tool_output_mode", uint8_t() },
+  { "tool_digital_output0_mode", uint8_t() },
+  { "tool_digital_output1_mode", uint8_t() },
+  { "payload", double() },
+  { "payload_cog", vector3d_t() },
+  { "payload_inertia", vector6d_t() },
+  { "script_control_line", uint32_t() },
+  { "ft_raw_wrench", vector6d_t() },
 };
 
 void rtde_interface::DataPackage::initEmpty()
