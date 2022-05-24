@@ -2,6 +2,7 @@
 
 // -- BEGIN LICENSE BLOCK ----------------------------------------------
 // Copyright 2019 FZI Forschungszentrum Informatik
+// Created on behalf of Universal Robots A/S
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,14 +31,14 @@
 namespace urcl
 {
 CalibrationChecker::CalibrationChecker(const std::string& expected_hash)
-  : expected_hash_(expected_hash), checked_(false)
+  : expected_hash_(expected_hash), checked_(false), matches_(false)
 {
 }
 void CalibrationChecker::handle(primary_interface::KinematicsInfo& kin_info)
 {
   if (kin_info.toHash() != expected_hash_)
   {
-    LOG_ERROR("The calibration parameters of the connected robot don't match the ones from the given kinematics "
+    URCL_LOG_ERROR("The calibration parameters of the connected robot don't match the ones from the given kinematics "
               "config file. Please be aware that this can lead to critical inaccuracies of tcp positions. Use the "
               "ur_calibration tool to extract the correct calibration from the robot and pass that into the "
               "description. See "
@@ -46,7 +47,12 @@ void CalibrationChecker::handle(primary_interface::KinematicsInfo& kin_info)
   }
   else
   {
-    LOG_INFO("Calibration checked successfully.");
+    URCL_LOG_INFO("Calibration checked successfully.");
+    // URCL_LOG_INFO("%s", product->toString().c_str());
+    //
+    matches_ = kin_info.toHash() == expected_hash_;
+
+    checked_ = true;
   }
 
   checked_ = true;

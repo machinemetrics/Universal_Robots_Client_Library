@@ -1,10 +1,11 @@
 # Universal Robots Client Library
-<!--ts-->
    * [Universal Robots Client Library](#universal-robots-client-library)
+      * [Requirements](#requirements)
       * [Build instructions](#build-instructions)
          * [Plain cmake](#plain-cmake)
          * [Inside a ROS workspace](#inside-a-ros-workspace)
       * [Use this library in other projects](#use-this-library-in-other-projects)
+      * [License](#license)
       * [Library contents](#library-contents)
       * [Example driver](#example-driver)
       * [Architecture](#architecture)
@@ -18,20 +19,34 @@
          * [DashboardClient](#dashboardclient)
       * [A word on the primary / secondary interface](#a-word-on-the-primary--secondary-interface)
       * [A word on Real-Time scheduling](#a-word-on-real-time-scheduling)
+      * [Producer / Consumer architecture](#producer--consumer-architecture)
+      * [Logging configuration](#logging-configuration)
+         * [Change logging level](#change-logging-level)
+         * [Create new log handler](#create-new-log-handler)
+         * [Console_bridge](#console_bridge)
+      * [Acknowledgement](#acknowledgement)
 
-<!-- Added by: mauch, at: Do 10. Sep 13:37:24 CEST 2020 -->
-
-<!--te-->
-
----
-<div style="background-color:red;color:black;padding:5pt;">DISCLAIMER: This library is still
-under development. Documentation may be missing and things might change in the near future.</div>
-
----
 
 A C++ library for accessing Universal Robots interfaces. With this library C++-based drivers can be
 implemented in order to create external applications leveraging the versatility of Universal Robots
 robotic manipulators.
+
+## Requirements
+ * The library requires an implementation of **POSIX threads** such as the `pthread` library
+ * Socket communication is currently based on Linux sockets. Thus, this library will require Linux
+   for building and using.
+ * The [master](https://github.com/UniversalRobots/Universal_Robots_Client_Library/tree/master)
+   branch of this repository requires a C++17-compatible compiler. For building this library without
+   a C++17-requirement, please use the
+   [boost](https://github.com/UniversalRobots/Universal_Robots_Client_Library/tree/boost) branch
+   instead that requires the boost library.
+   For the C++17 features, please use those minimum compiler versions:
+
+   | Compiler  | min. version |
+   |-----------|--------------|
+   | **GCC**   | 7            |
+   | **Clang** | 7            |
+
 
 ## Build instructions
 ### Plain cmake
@@ -88,13 +103,27 @@ int main(int argc, char* argv[])
 ```cmake
 # CMakeLists.txt
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.0.2)
 project(minimal_example)
 
 find_package(ur_client_library REQUIRED)
 add_executable(db_client main.cpp)
 target_link_libraries(db_client ur_client_library::urcl)
 ```
+
+## License
+The majority of this library is licensed under the Apache-2.0 licensed. However, certain parts are
+licensed under different licenses:
+ - The queue used inside the communication structures is originally written by Cameron Desrochers
+   and is released under the BSD-2-Clause license.
+ - The semaphore implementation used inside the queue implementation is written by Jeff Preshing and
+   licensed under the zlib license
+ - The Dockerfile used for the integration tests of this repository is originally written by Arran
+   Hobson Sayers and released under the MIT license
+
+While the main `LICENSE` file in this repository contains the Apache-2.0 license used for the
+majority of the work, the respective libraries of third-party components reside together with the
+code imported from those third parties.
 
 ## Library contents
 Currently, this library contains the following components:
@@ -117,8 +146,8 @@ instance of the `UrDriver` class and prints the RTDE values read from the contro
 sure to
  * have an instance of a robot controller / URSim running at the configured IP address (or adapt the
    address to your needs)
- * run it from its source folder, as for simplicity reasons it doesn't use any sophisticated method
-   to locate the required files.
+ * run it from the package's main folder (the one where this README.md file is stored), as for
+   simplicity reasons it doesn't use any sophisticated method to locate the required files.
 
 ## Architecture
 The image below shows a rough architecture overview that should help developers to use the different
@@ -174,8 +203,8 @@ An example of a standalone RTDE-client can be found in the `examples` subfolder.
 sure to
  * have an instance of a robot controller / URSim running at the configured IP address (or adapt the
    address to your needs)
- * run it from its source folder, as for simplicity reasons it doesn't use any sophisticated method
-   to locate the required recipe files.
+ * run it from the package's main folder (the one where this README.md file is stored), as for
+   simplicity reasons it doesn't use any sophisticated method to locate the required files.
 
 #### RTDEWriter
 The `RTDEWriter` class provides an interface to write data to the RTDE interface. Data fields that
@@ -194,13 +223,9 @@ meant to send joint positions or velocities together with a mode that tells the 
 interpret those values (e.g. `SERVOJ`, `SPEEDJ`). Therefore, this interface can be used to do motion
 command streaming to the robot.
 
-Simultaneously this class offers a function to receive a keepalive signal from the robot. This
-function expects to read a terminated string from the opened socket and returns the string that has
-been read. If no string could be read, an empty string is returned instead.
-
 In order to use this class in an application together with a robot, make sure that a corresponding
-URScript is running on the robot that can interpret the commands sent and sends keepalive signals to
-the interface. See [this example script](examples/resources/scriptfile.urscript) for reference.
+URScript is running on the robot that can interpret the commands sent. See [this example
+script](resources/external_control.urscript) for reference.
 
 Also see the [ScriptSender](#scriptsender) for a way to define the corresponding URScript on the
 control PC and sending it to the robot upon request.
@@ -239,7 +264,7 @@ string from this function. If no answer is received, a `UrException` is thrown.
 
 Note: In order to make this more useful developers are expected to wrap this bare interface into
 something that checks the returned string for something that is expected. See the
-[DashboardClientROS](https://github.com/UniversalRobots/Universal_Robots_ROS_Driver/blob/master/ur_robot_driver/include/ur_robot_driver/ros/dashboard_client_ros.h) as an example.
+[DashboardClientROS](https://github.com/UniversalRobots/Universal_Robots_ROS_Driver/blob/master/ur_robot_driver/include/ur_robot_driver/dashboard_client_ros.h) as an example.
 
 ## A word on the primary / secondary interface
 Currently, this library doesn't support the primary interface very well, as the [Universal Robots
@@ -263,7 +288,7 @@ for details on how to set this up.
 The RTDE receive thread will be scheduled to real-time priority automatically, if applicable. If
 this doesn't work, an error is raised at startup. The main thread calling `getDataPackage` should be
 scheduled to real-time priority by the application. See the
-[ur_robot_driver](https://github.com/UniversalRobots/Universal_Robots_ROS_Driver/blob/master/ur_robot_driver/src/ros/hardware_interface_node.cpp)
+[ur_robot_driver](https://github.com/UniversalRobots/Universal_Robots_ROS_Driver/blob/master/ur_robot_driver/src/hardware_interface_node.cpp)
 as an example.
 
 ## Producer / Consumer architecture
@@ -278,11 +303,102 @@ As this library was originally designed to be included into a ROS driver but als
 standalone library, it uses custom logging macros instead of direct `printf` or `std::cout`
 statements.
 
-These logging macros will either be translated into `printf` statements or logging commands of
-[`console_bridge`](https://github.com/ros/console_bridge) if `console_bridge` is found on the system
-during the cmake run. In this case, the define `ROS_BUILD` will be set.When built inside a catkin
-workspace, logging commands are automatically translated into ROS logging commands.
+The macro based interface is by default using the [`DefaultLogHandler`](include/ur_client_library/default_log_handler.h)
+to print the logging messages as `printf` statements. It is possible to define your own log handler
+to change the behavior, [see create new log handler](#Create-new-log-handler) on how to.
 
-Whenever you compile this library against `console_bridge`, make sure to set the logging level in
-your application, as by default `console_bridge` will only print messages of level WARNING or
-higher. See [`examples/primary_pipeline.cpp`](examples/primary_pipeline.cpp) as an example.
+### Change logging level
+Make sure to set the logging level in your application, as by default only messages of level
+WARNING or higher will be printed. See below for an example:
+```c++
+#include "ur_client_library/log.h"
+
+int main(int argc, char* argv[])
+{
+  urcl::setLogLevel(urcl::LogLevel::DEBUG);
+
+  URCL_LOG_DEBUG("Logging debug message");
+  return 0;
+}
+```
+
+### Create new log handler
+The logger comes with an interface [`LogHandler`](include/ur_client_library/log.h), which can be
+used to implement your own log handler for messages logged with this library. This can be done by
+inheriting from the `LogHandler class`.
+
+If you want to create a new log handler in your application, you can use below example as
+inspiration:
+
+```c++
+#include "ur_client_library/log.h"
+#include <iostream>
+
+class MyLogHandler : public urcl::LogHandler
+{
+public:
+  MyLogHandler() = default;
+
+  void log(const char* file, int line, urcl::LogLevel loglevel, const char* log) override
+  {
+    switch (loglevel)
+    {
+      case urcl::LogLevel::INFO:
+        std::cout << "INFO " << file << " " << line << ": " << log << std::endl;
+        break;
+      case urcl::LogLevel::DEBUG:
+        std::cout << "DEBUG " << file << " " << line << ": " << log << std::endl;
+        break;
+      case urcl::LogLevel::WARN:
+        std::cout << "WARN " << file << " " << line << ": " << log << std::endl;
+        break;
+      case urcl::LogLevel::ERROR:
+        std::cout << "ERROR " << file << " " << line << ": " << log << std::endl;
+        break;
+      case urcl::LogLevel::FATAL:
+        std::cout << "ERROR " << file << " " << line << ": " << log << std::endl;
+        break;
+      default:
+        break;
+    }
+  }
+};
+
+int main(int argc, char* argv[])
+{
+  urcl::setLogLevel(urcl::LogLevel::DEBUG);
+  std::unique_ptr<MyLogHandler> log_handler(new MyLogHandler);
+  urcl::registerLogHandler(std::move(log_handler));
+
+  URCL_LOG_DEBUG("logging debug message");
+  URCL_LOG_INFO("logging info message");
+  return 0;
+}
+```
+
+## Acknowledgment
+Many parts of this library are forked from the [ur_modern_driver](https://github.com/ros-industrial/ur_modern_driver).
+
+Developed in collaboration between:
+
+[<img height="60" alt="Universal Robots A/S" src="doc/resources/ur_logo.jpg">](https://www.universal-robots.com/) &nbsp; and &nbsp;
+[<img height="60" alt="FZI Research Center for Information Technology" src="doc/resources/fzi-logo_transparenz.png">](https://www.fzi.de).
+
+<!--
+    ROSIN acknowledgement from the ROSIN press kit
+    @ https://github.com/rosin-project/press_kit
+-->
+
+<a href="http://rosin-project.eu">
+  <img src="http://rosin-project.eu/wp-content/uploads/rosin_ack_logo_wide.png"
+       alt="rosin_logo" height="60" >
+</a>
+
+Supported by ROSIN - ROS-Industrial Quality-Assured Robot Software Components.
+More information: <a href="http://rosin-project.eu">rosin-project.eu</a>
+
+<img src="http://rosin-project.eu/wp-content/uploads/rosin_eu_flag.jpg"
+     alt="eu_flag" height="45" align="left" >
+
+This project has received funding from the European Union’s Horizon 2020
+research and innovation programme under grant agreement no. 732287.

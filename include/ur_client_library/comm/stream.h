@@ -68,7 +68,7 @@ public:
    */
   void disconnect()
   {
-    LOG_DEBUG("Disconnecting from %s:%d", host_.c_str(), port_);
+    URCL_LOG_DEBUG("Disconnecting from %s:%d", host_.c_str(), port_);
     TCPSocket::close();
   }
 
@@ -103,6 +103,16 @@ public:
    * \returns False if sending went wrong
    */
   bool write(const uint8_t* buf, const size_t buf_len, size_t& written);
+
+  /*!
+   * \brief Get the host IP
+   *
+   * \returns The host IP
+   */
+  std::string getHost()
+  {
+    return host_;
+  }
 
 protected:
   virtual bool open(int socket_fd, struct sockaddr* address, size_t address_len)
@@ -141,7 +151,7 @@ bool URStream<T>::read(uint8_t* buf, const size_t buf_len, size_t& total)
       remainder = T::HeaderType::getPackageLength(buf);
       if (remainder >= (buf_len - sizeof(typename T::HeaderType::_package_size_type)))
       {
-        LOG_ERROR("Packet size %zd is larger than buffer %zu, discarding.", remainder, buf_len);
+        URCL_LOG_ERROR("Packet size %zd is larger than buffer %zu, discarding.", remainder, buf_len);
         return false;
       }
       initial = false;

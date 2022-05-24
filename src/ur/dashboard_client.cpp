@@ -2,6 +2,7 @@
 
 // -- BEGIN LICENSE BLOCK ----------------------------------------------
 // Copyright 2019 FZI Forschungszentrum Informatik
+// Created on behalf of Universal Robots A/S
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,13 +41,13 @@ bool DashboardClient::connect()
 {
   if (getState() == comm::SocketState::Connected)
   {
-    LOG_ERROR("%s", "Socket is already connected. Refusing to reconnect.");
+    URCL_LOG_ERROR("%s", "Socket is already connected. Refusing to reconnect.");
     return false;
   }
   bool ret_val = false;
   if (TCPSocket::setup(host_, port_))
   {
-    LOG_INFO("%s", read().c_str());
+    URCL_LOG_INFO("%s", read().c_str());
     ret_val = true;
   }
   return ret_val;
@@ -54,7 +55,7 @@ bool DashboardClient::connect()
 
 void DashboardClient::disconnect()
 {
-  LOG_INFO("Disconnecting from Dashboard server on %s:%d", host_.c_str(), port_);
+  URCL_LOG_INFO("Disconnecting from Dashboard server on %s:%d", host_.c_str(), port_);
   TCPSocket::close();
 }
 

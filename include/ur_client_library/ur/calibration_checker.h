@@ -2,6 +2,7 @@
 
 // -- BEGIN LICENSE BLOCK ----------------------------------------------
 // Copyright 2019 FZI Forschungszentrum Informatik
+// Created on behalf of Universal Robots A/S
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -69,9 +70,21 @@ public:
     return checked_;
   }
 
+  /*!
+   * \brief Returns whether the calibration check was successful.
+   *
+   * \returns True if the robot's calibration checksum matches the one given to the checker. False
+   * if it doesn't match or the check was not yet performed.
+   */
+  bool checkSuccessful()
+  {
+    return matches_;
+  }
+
 private:
   std::string expected_hash_;
   bool checked_;
+  bool matches_;
 };
 }  // namespace urcl
 

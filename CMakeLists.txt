@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.0.2)
 project(ur_client_library)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules/" ${CMAKE_MODULE_PATH})
@@ -18,8 +18,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
 
 add_library(urcl SHARED
     src/comm/tcp_socket.cpp
-    src/comm/server.cpp
     src/primary/primary_client.cpp
+    src/comm/tcp_server.cpp
+    src/control/reverse_interface.cpp
+    src/control/script_sender.cpp
+    src/control/trajectory_point_interface.cpp
     src/primary/primary_package.cpp
     src/primary/robot_message.cpp
     src/primary/robot_state.cpp
@@ -44,6 +47,8 @@ add_library(urcl SHARED
     src/ur/dashboard_client.cpp
     src/ur/tool_communication.cpp
     src/rtde/rtde_writer.cpp
+    src/default_log_handler.cpp
+    src/log.cpp
 )
 add_library(ur_client_library::urcl ALIAS urcl)
 target_compile_options(urcl PRIVATE -Wall -Wextra -Wno-unused-parameter)
@@ -59,18 +64,6 @@ if(THREADS_HAVE_PTHREAD_ARG)
 endif()
 if(CMAKE_THREAD_LIBS_INIT)
   target_link_libraries(urcl PUBLIC "${CMAKE_THREAD_LIBS_INIT}")
-endif()
-
-find_package(console_bridge)
-if(console_bridge_FOUND)
-  message(STATUS "Building with ROS logging support")
-  add_definitions( -DROS_BUILD )
-  target_include_directories( urcl PRIVATE
-    ${console_bridge_INCLUDE_DIRS}
-  )
-  target_link_libraries(urcl INTERFACE console_bridge)
-else()
-  message(STATUS "Building without ROS logging support")
 endif()
 
 ##
@@ -104,3 +97,25 @@ write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/ur_client_libraryCo
 install(FILES ur_client_libraryConfig.cmake
   DESTINATION lib/cmake/ur_client_library)
 
+# Install package.xml file so this package can be processed by ROS toolings
+# See REP 136 for details
+# Installing this in non-ROS environments won't have any effect, but it won't harm, either.
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
+
+#### Begin import ####
+# Imported from ros-industrial/ros_industrial_cmake_boilerplate
+# https://github.com/ros-industrial/ros_industrial_cmake_boilerplate/blob/master/ros_industrial_cmake_boilerplate/cmake/cmake_tools.cmake
+# Copyright (C) 2018 by George Cave - gcave@stablecoder.ca
+# Copyright (c) 2020, Southwest Research Institute
+# Licensed under Apache-2.0 license
+
+# Allows Colcon to find non-Ament packages when using workspace underlays
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME} "")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME} DESTINATION share/ament_index/resource_index/packages)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ament_prefix_path.dsv "prepend-non-duplicate;AMENT_PREFIX_PATH;")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ament_prefix_path.dsv DESTINATION share/${PROJECT_NAME}/hook)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ros_package_path.dsv "prepend-non-duplicate;ROS_PACKAGE_PATH;")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ros_package_path.dsv DESTINATION share/${PROJECT_NAME}/hook)
+#### End iport ####
+
+install(DIRECTORY resources DESTINATION share/${PROJECT_NAME})

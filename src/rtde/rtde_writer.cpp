@@ -2,6 +2,7 @@
 
 // -- BEGIN LICENSE BLOCK ----------------------------------------------
 // Copyright 2019 FZI Forschungszentrum Informatik
+// Created on behalf of Universal Robots A/S
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -59,7 +60,7 @@ void RTDEWriter::run()
       stream_->write(buffer, size, written);
     }
   }
-  LOG_DEBUG("Write thread ended.");
+  URCL_LOG_DEBUG("Write thread ended.");
 }
 
 bool RTDEWriter::sendSpeedSlider(double speed_slider_fraction)
