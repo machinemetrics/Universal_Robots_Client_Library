@@ -82,6 +82,16 @@ public:
     URCL_LOG_INFO("%s", msg.toString().c_str());
     return true;
   }
+  virtual bool consume(ProgramStateMessage& msg) override
+  {
+    URCL_LOG_INFO("---ProgramStateMessage---%s", msg.toString().c_str());
+    return true;
+  }
+  virtual bool consume(GlobalVariablesUpdateMessage& msg) override
+  {
+    URCL_LOG_INFO("---GlobalVariablesUpdateMessage---\n%s", msg.toString().c_str());
+    return true;
+  }
 
 private:
   /* data */
