@@ -330,6 +330,9 @@ void RTDEClient::setupInputs()
   size_t size;
   size_t written;
   uint8_t buffer[4096];
+
+  if (input_recipe_.empty()) { return; }
+
   size = ControlPackageSetupInputsRequest::generateSerializedRequest(buffer, input_recipe_);
   if (!stream_.write(buffer, size, written))
   {
