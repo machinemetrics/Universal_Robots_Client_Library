@@ -219,8 +219,8 @@ private:
   {
     switch(type)
     {
-      //case ProgramStateMessageType::GLOBAL_VARIABLES_SETUP:
-        //return new GlobalVariablesSetupMessage(timestamp);
+      case ProgramStateMessageType::GLOBAL_VARIABLES_SETUP:
+        return new GlobalVariablesSetupMessage(timestamp);
       case ProgramStateMessageType::GLOBAL_VARIABLES_UPDATE:
         return new GlobalVariablesUpdateMessage(timestamp);
       //case ProgramStateMessageType::TYPE_VARIABLES_UPDATE:
