@@ -32,6 +32,7 @@
 #include "ur_client_library/primary/robot_message/runtime_exception_message.h"
 #include "ur_client_library/primary/robot_message/text_message.h"
 #include "ur_client_library/primary/robot_message/version_message.h"
+#include "ur_client_library/primary/program_state_message/global_variables_setup_message.h"
 #include "ur_client_library/primary/program_state_message/global_variables_update_message.h"
 
 
