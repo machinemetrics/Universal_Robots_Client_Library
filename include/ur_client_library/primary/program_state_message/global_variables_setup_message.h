@@ -48,7 +48,7 @@ public:
    * \param source The package's source
    */
   GlobalVariablesSetupMessage(const uint64_t timestamp)
-    : ProgramStateMessage(timestamp, ProgramStateMessageType::GLOBAL_VARIABLES_UPDATE)
+    : ProgramStateMessage(timestamp, ProgramStateMessageType::GLOBAL_VARIABLES_SETUP)
   {
   }
   virtual ~GlobalVariablesSetupMessage() = default;
