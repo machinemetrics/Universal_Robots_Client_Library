@@ -37,6 +37,7 @@
 #include "ur_client_library/primary/robot_message/text_message.h"
 #include "ur_client_library/primary/robot_message/version_message.h"
 #include "ur_client_library/primary/robot_state/kinematics_info.h"
+#include "ur_client_library/primary/program_state_message/global_variables_setup_message.h"
 #include "ur_client_library/primary/program_state_message/global_variables_update_message.h"
 
 namespace urcl
@@ -83,6 +84,7 @@ public:
   virtual bool consume(VersionMessage& pkg) = 0;
   virtual bool consume(KinematicsInfo& pkg) = 0;
   virtual bool consume(ProgramStateMessage& pkg) = 0;
+  virtual bool consume(GlobalVariablesSetupMessage& pkg) = 0;
   virtual bool consume(GlobalVariablesUpdateMessage& pkg) = 0;
 
 private:
