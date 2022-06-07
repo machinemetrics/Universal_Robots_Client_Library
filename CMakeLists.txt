@@ -27,6 +27,7 @@ add_library(urcl SHARED
     src/primary/program_state_message.cpp
     src/primary/robot_message.cpp
     src/primary/robot_state.cpp
+    src/primary/program_state_message/global_variables_setup_message.cpp
     src/primary/program_state_message/global_variables_update_message.cpp
     src/primary/robot_message/error_code_message.cpp
     src/primary/robot_message/runtime_exception_message.cpp
