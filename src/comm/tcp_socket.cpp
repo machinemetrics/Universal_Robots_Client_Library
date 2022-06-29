@@ -92,6 +92,8 @@ bool TCPSocket::setup(std::string& host, int port)
         connected = true;
         break;
       }
+      // Prevent leaking the socket handle between retries
+      close();
     }
 
     freeaddrinfo(result);
