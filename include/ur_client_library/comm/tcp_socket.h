@@ -58,7 +58,7 @@ protected:
   }
   virtual void setOptions(int socket_fd);
 
-  bool setup(std::string& host, int port);
+  bool setup(std::string& host, int port, bool retry = true);
 
   std::unique_ptr<timeval> recv_timeout_;
 
