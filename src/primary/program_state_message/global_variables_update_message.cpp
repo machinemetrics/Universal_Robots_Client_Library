@@ -23,45 +23,43 @@
 /*!\file
  *
  * \author  Felix Exner exner@fzi.de
- * \date    2019-04-08
+ * \date    2022-02-21
  *
  */
 //----------------------------------------------------------------------
 
 #include "ur_client_library/log.h"
-#include "ur_client_library/primary/robot_message/version_message.h"
+#include "ur_client_library/primary/program_state_message/global_variables_update_message.h"
 #include "ur_client_library/primary/abstract_primary_consumer.h"
 
 namespace urcl
 {
 namespace primary_interface
 {
-bool VersionMessage::parseWith(comm::BinParser& bp)
+bool GlobalVariablesUpdateMessage::parseWith(comm::BinParser& bp)
 {
-  bp.parse(project_name_length_);
-  bp.parse(project_name_, project_name_length_);
-  bp.parse(major_version_);
-  bp.parse(minor_version_);
-  bp.parse(svn_version_);
-  bp.parse(build_number_);
-  bp.parseRemainder(build_date_);
+  bp.parse(start_index_);
+  bp.parseRemainder(variables_);
 
   return true;  // not really possible to check dynamic size packets
 }
 
-bool VersionMessage::consumeWith(AbstractPrimaryConsumer& consumer)
+bool GlobalVariablesUpdateMessage::consumeWith(AbstractPrimaryConsumer& consumer)
 {
   return consumer.consume(*this);
 }
 
-std::string VersionMessage::toString() const
+std::string GlobalVariablesUpdateMessage::toString() const
 {
   std::stringstream ss;
-  ss << "project name: " << project_name_ << std::endl;
-  ss << "version: " << unsigned(major_version_) << "." << unsigned(minor_version_) << "." << svn_version_ << std::endl;
-  ss << "build date: " << build_date_;
-
+  ss << "start index: " << start_index_ << std::endl;
+  ss << "variables: (" << variables_.length() << ")";
+  for (const char& c : variables_)
+  {
+    ss << std::hex << static_cast<int>(c) << " ";
+  }
   return ss.str();
 }
 }  // namespace primary_interface
 }  // namespace urcl
+

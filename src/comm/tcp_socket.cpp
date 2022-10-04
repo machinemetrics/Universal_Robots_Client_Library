@@ -55,7 +55,7 @@ void TCPSocket::setOptions(int socket_fd)
   }
 }
 
-bool TCPSocket::setup(std::string& host, int port)
+bool TCPSocket::setup(std::string& host, int port, bool retry)
 {
   if (state_ == SocketState::Connected)
     return false;
@@ -92,6 +92,8 @@ bool TCPSocket::setup(std::string& host, int port)
         connected = true;
         break;
       }
+      // Prevent leaking the socket handle between retries
+      close();
     }
 
     freeaddrinfo(result);
@@ -101,9 +103,16 @@ bool TCPSocket::setup(std::string& host, int port)
       state_ = SocketState::Invalid;
       std::stringstream ss;
       ss << "Failed to connect to robot on IP " << host_name
-         << ". Please check that the robot is booted and reachable on " << host_name << ". Retrying in 10 seconds";
-      URCL_LOG_ERROR("%s", ss.str().c_str());
-      std::this_thread::sleep_for(std::chrono::seconds(10));
+        << ". Please check that the robot is booted and reachable on " << host_name;
+      if (retry) {
+        ss << ". Retrying in 10 seconds";
+        URCL_LOG_ERROR("%s", ss.str().c_str());
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+      } else {
+        ss << ". No Retry";
+        URCL_LOG_ERROR("%s", ss.str().c_str());
+        return connected;
+      }
     }
   }
   setOptions(socket_fd_);

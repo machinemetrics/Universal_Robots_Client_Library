@@ -262,8 +262,9 @@ bool UrDriver::checkCalibration(const std::string& checksum)
 
   comm::INotifier notifier;
 
-  comm::Pipeline<primary_interface::PrimaryPackage> pipeline(prod, &consumer, "Pipeline", notifier);
-  pipeline.run();
+  // Calibration checker isn't an IConsumer anymore in this mod, so this doesn't work
+  //comm::Pipeline<primary_interface::PrimaryPackage> pipeline(prod, &consumer, "Pipeline", notifier);
+  //pipeline.run();
 
   while (!consumer.isChecked())
   {

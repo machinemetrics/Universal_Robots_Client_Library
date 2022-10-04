@@ -37,6 +37,7 @@
 #include "ur_client_library/ur/tool_communication.h"
 #include "ur_client_library/ur/version_information.h"
 #include "ur_client_library/primary/robot_message/version_message.h"
+#include "ur_client_library/primary/primary_client.h"
 #include "ur_client_library/rtde/rtde_writer.h"
 
 namespace urcl
@@ -319,6 +320,7 @@ private:
   comm::INotifier notifier_;
   std::unique_ptr<rtde_interface::RTDEClient> rtde_client_;
   std::unique_ptr<control::ReverseInterface> reverse_interface_;
+  //primary_interface::PrimaryClient primary_client_;
   std::unique_ptr<control::TrajectoryPointInterface> trajectory_interface_;
   std::unique_ptr<control::ScriptSender> script_sender_;
   std::unique_ptr<comm::URStream<primary_interface::PrimaryPackage>> primary_stream_;

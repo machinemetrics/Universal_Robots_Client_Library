@@ -26,13 +26,19 @@
  */
 //----------------------------------------------------------------------
 
-#ifndef UR_ROBOT_DRIVER_ABSTRACT_PRIMARY_CONSUMER_H_INCLUDED
-#define UR_ROBOT_DRIVER_ABSTRACT_PRIMARY_CONSUMER_H_INCLUDED
+#ifndef UR_CLIENT_LIBRARY_ABSTRACT_PRIMARY_CONSUMER_H_INCLUDED
+#define UR_CLIENT_LIBRARY_ABSTRACT_PRIMARY_CONSUMER_H_INCLUDED
 
 #include "ur_client_library/log.h"
 #include "ur_client_library/comm/pipeline.h"
+#include "ur_client_library/primary/robot_message/error_code_message.h"
+#include "ur_client_library/primary/robot_message/key_message.h"
+#include "ur_client_library/primary/robot_message/runtime_exception_message.h"
+#include "ur_client_library/primary/robot_message/text_message.h"
 #include "ur_client_library/primary/robot_message/version_message.h"
 #include "ur_client_library/primary/robot_state/kinematics_info.h"
+#include "ur_client_library/primary/program_state_message/global_variables_setup_message.h"
+#include "ur_client_library/primary/program_state_message/global_variables_update_message.h"
 
 namespace urcl
 {
@@ -71,8 +77,15 @@ public:
   // To be implemented in specific consumers
   virtual bool consume(RobotMessage& pkg) = 0;
   virtual bool consume(RobotState& pkg) = 0;
+  virtual bool consume(ErrorCodeMessage& pkg) = 0;
+  virtual bool consume(KeyMessage& pkg) = 0;
+  virtual bool consume(RuntimeExceptionMessage& pkg) = 0;
+  virtual bool consume(TextMessage& pkg) = 0;
   virtual bool consume(VersionMessage& pkg) = 0;
   virtual bool consume(KinematicsInfo& pkg) = 0;
+  virtual bool consume(ProgramStateMessage& pkg) = 0;
+  virtual bool consume(GlobalVariablesSetupMessage& pkg) = 0;
+  virtual bool consume(GlobalVariablesUpdateMessage& pkg) = 0;
 
 private:
   /* data */
@@ -80,4 +93,4 @@ private:
 }  // namespace primary_interface
 }  // namespace urcl
 
-#endif  // ifndef UR_ROBOT_DRIVER_ABSTRACT_PRIMARY_CONSUMER_H_INCLUDED
+#endif  // ifndef UR_CLIENT_LIBRARY_ABSTRACT_PRIMARY_CONSUMER_H_INCLUDED
